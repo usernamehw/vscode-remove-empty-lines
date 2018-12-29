@@ -43,7 +43,18 @@
 				"title": "in Selection",
 				"category": "Remove empty lines"
 			}
-		]
+		],
+		"configuration": {
+			"type": "object",
+			"title": "Remove empty lines configuration",
+			"properties": {
+				"remove-empty-lines.allowedNumberOfEmptyLines": {
+					"type": "number",
+					"default": 0,
+					"description": "Number of allowed consecutive empty lines."
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
