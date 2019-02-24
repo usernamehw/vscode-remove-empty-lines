@@ -14,8 +14,11 @@ export function activate(ctx: ExtensionContext) {
 		}
 	}
 
-	function removeEmptyLines(inSelection: boolean, editor: vscode.TextEditor): void {
+	function removeEmptyLines(inSelection: boolean, editor: vscode.TextEditor, edit: vscode.TextEditorEdit, keybindingsPassedAllowedNumberOfEmptyLines?: any): void {
 		updateConfig();
+		if (typeof keybindingsPassedAllowedNumberOfEmptyLines === 'number') {
+			config.allowedNumberOfEmptyLines = keybindingsPassedAllowedNumberOfEmptyLines;
+		}
 
 		const { document } = editor;
 
