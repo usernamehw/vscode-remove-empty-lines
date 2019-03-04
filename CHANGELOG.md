@@ -1,3 +1,8 @@
+## 0.0.5 `04 Mar 2019`
+
+- 📚 Updated README with the information that extension does not contribute any keybindings
+- 📚 Updated README with the link on how to open `keybindings.json`
+
 ## 0.0.4 `25 Feb 2019`
 
 - ✨ Ability to pass `allowedNumberOfEmptyLines` as `args` in keybindings:

@@ -14,8 +14,11 @@ Example: `"remove-empty-lines.allowedNumberOfEmptyLines": 1,`
 
 ![demo_allowed_lines](img/demo_allowed_lines.gif)
 
+# ⚠⚠⚠ Extension doesn't define any keyboard shortcuts
 
-### Pass allowed number of empty lines as arguments in `keybindings.json`
+[📚 How to open keybindings.json =======>](https://stackoverflow.com/a/45384050/5590193)
+
+### DEMO: Pass allowed number of empty lines as arguments in `keybindings.json`
 
 ```javascript
 {
