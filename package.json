@@ -1,7 +1,7 @@
 {
 	"name": "remove-empty-lines",
 	"displayName": "Remove empty lines",
-	"description": "Remove blank lines from document or selection",
+	"description": "Remove blank lines from document or selection.",
 	"version": "0.0.5",
 	"publisher": "usernamehw",
 	"license": "MIT",
@@ -64,10 +64,9 @@
 		"test": "npm run compile && node ./node_modules/vscode/bin/test"
 	},
 	"devDependencies": {
-		"typescript": "^3.1.4",
-		"vscode": "^1.1.25",
-		"tslint": "^5.8.0",
-		"@types/node": "^8.10.25",
-		"@types/mocha": "^2.2.42"
+		"@types/node": "^8.10.54",
+		"@types/vscode": "^1.25.0",
+		"tslint": "^5.20.0",
+		"typescript": "^3.6.3"
 	}
 }
