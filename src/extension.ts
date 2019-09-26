@@ -1,5 +1,5 @@
 'use strict';
-import { ExtensionContext, commands, window, workspace, TextEditor, TextDocument } from 'vscode';
+import { ExtensionContext, commands, workspace, TextEditor, TextDocument } from 'vscode';
 import * as vscode from 'vscode';
 import { IConfig, IRange } from './types';
 
