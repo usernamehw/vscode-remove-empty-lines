@@ -1,3 +1,8 @@
+## 0.0.6 `26 Sep 2019`
+
+- 🔨 Remove gifs from the extension
+- 🔨 Use webpack
+
 ## 0.0.5 `04 Mar 2019`
 
 - 📚 Updated README with the information that extension does not contribute any keybindings
