@@ -4,7 +4,7 @@
 * `remove-empty-lines.inSelection` - can be used without selection (will remove all adjacent empty lines)
 
 
-![demo](img/demo.gif)
+![demo](https://raw.githubusercontent.com/usernamehw/vscode-remove-empty-lines/master/img/demo.gif)
 
 ### Settings
 
@@ -12,7 +12,7 @@
 
 Example: `"remove-empty-lines.allowedNumberOfEmptyLines": 1,`
 
-![demo_allowed_lines](img/demo_allowed_lines.gif)
+![demo_allowed_lines](https://raw.githubusercontent.com/usernamehw/vscode-remove-empty-lines/master/img/demo_allowed_lines.gif)
 
 # ⚠⚠⚠ Extension doesn't define any keyboard shortcuts
 

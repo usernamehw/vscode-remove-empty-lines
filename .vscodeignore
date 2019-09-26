@@ -10,3 +10,6 @@ vsc-extension-quickstart.md
 **/*.ts
 package-lock.json
 .editorconfig
+
+img/demo.gif
+img/demo_allowed_lines.gif
