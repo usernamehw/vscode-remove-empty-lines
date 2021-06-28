@@ -1,3 +1,7 @@
+## 0.0.7 `28 Jun 2021`
+
+- 🔨 Refactor?
+
 ## 0.0.6 `26 Sep 2019`
 
 - 🔨 Remove gifs from the extension
