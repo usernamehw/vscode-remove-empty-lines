@@ -1,92 +1,110 @@
-'use strict';
-import { ExtensionContext, commands, workspace, TextEditor, TextDocument } from 'vscode';
-import * as vscode from 'vscode';
+import { commands, TextDocument, TextEditor, workspace } from 'vscode';
 import { IConfig, IRange } from './types';
 
-export function activate(ctx: ExtensionContext) {
-	const extName = 'remove-empty-lines';
-	let config: IConfig;
+let allowedNumberActive = 0;
 
-	function updateConfig(): void {
-		config = { ...workspace.getConfiguration(extName) } as any as IConfig;
-		if (config.allowedNumberOfEmptyLines < 0 || config.allowedNumberOfEmptyLines > 500) {
-			config.allowedNumberOfEmptyLines = 0;
-		}
+const enum Constants {
+	EXTENSION_NAME = 'remove-empty-lines',
+}
+
+const enum CommandIds {
+	inDocument = 'remove-empty-lines.inDocument',
+	inSelection = 'remove-empty-lines.inSelection',
+}
+
+function updateConfig() {
+	const config = workspace.getConfiguration().get<IConfig>(Constants.EXTENSION_NAME);
+	if (!config) {
+		allowedNumberActive = 0;
+		return;
+	}
+	if (config.allowedNumberOfEmptyLines < 0 || config.allowedNumberOfEmptyLines >= 500) {
+		allowedNumberActive = 0;
+	} else {
+		allowedNumberActive = config.allowedNumberOfEmptyLines;
+	}
+}
+function removeEmptyLines(editor: TextEditor, inSelection: boolean, keybindingsPassedAllowedNumberOfEmptyLines?: unknown) {
+	updateConfig();
+	if (typeof keybindingsPassedAllowedNumberOfEmptyLines === 'number') {
+		allowedNumberActive = keybindingsPassedAllowedNumberOfEmptyLines;
 	}
 
-	function removeEmptyLines(inSelection: boolean, editor: vscode.TextEditor, edit: vscode.TextEditorEdit, keybindingsPassedAllowedNumberOfEmptyLines?: any): void {
-		updateConfig();
-		if (typeof keybindingsPassedAllowedNumberOfEmptyLines === 'number') {
-			config.allowedNumberOfEmptyLines = keybindingsPassedAllowedNumberOfEmptyLines;
-		}
+	const { document } = editor;
 
-		const { document } = editor;
+	if (inSelection) {
+		const { selections } = editor;
 
-		if (inSelection) {
-			const { selections } = editor;
-
-			if (selections.length === 1 && selections[0].isEmpty) {
-				// remove all adjacent empty lines up & down of the cursor
-				const tempAllowedNumberOfEmptyLines = config.allowedNumberOfEmptyLines;
-				config.allowedNumberOfEmptyLines = 0;
-				const activeLine = document.lineAt(selections[0].start.line);
-				if (!activeLine.isEmptyOrWhitespace) {
-					return;
-				} else {
-					const closestUp = findUpClosestNonEmptyLine(selections[0].start.line, document);
-					const closestDown = findDownClosestNonEmptyLine(selections[0].start.line, document);
-					removeEmptyLinesInRange(editor, document, [[closestUp, closestDown]]);
-				}
-				config.allowedNumberOfEmptyLines = tempAllowedNumberOfEmptyLines;
+		if (selections.length === 1 && selections[0].isEmpty) {
+			// remove all adjacent empty lines up & down of the cursor
+			const tempAllowedNumberOfEmptyLines = allowedNumberActive;
+			allowedNumberActive = 0;
+			const activeLine = document.lineAt(selections[0].start.line);
+			if (!activeLine.isEmptyOrWhitespace) {
+				return;
 			} else {
-				const ranges: IRange[] = [];
-				selections.forEach((selection) => {
-					ranges.push([selection.start.line, selection.end.line]);
-				});
-				removeEmptyLinesInRange(editor, document, ranges);
+				const closestUp = findUpClosestNonEmptyLine(selections[0].start.line, document);
+				const closestDown = findDownClosestNonEmptyLine(selections[0].start.line, document);
+				removeEmptyLinesInRange(editor, document, [[closestUp, closestDown]]);
 			}
+			allowedNumberActive = tempAllowedNumberOfEmptyLines;
 		} else {
-			removeEmptyLinesInRange(editor, document, [[0, document.lineCount - 1]]);
+			const ranges: IRange[] = [];
+			for (const selection of selections) {
+				ranges.push([selection.start.line, selection.end.line]);
+			}
+			removeEmptyLinesInRange(editor, document, ranges);
 		}
+	} else {
+		removeEmptyLinesInRange(editor, document, [[0, document.lineCount - 1]]);
 	}
-	function removeEmptyLinesInRange(editor: TextEditor, document: TextDocument, ranges: IRange[]): void {
-		editor.edit((edit) => {
-			ranges.forEach(range => {
-				let numberOfConsequtiveEmptyLines = 0;
-				for (let i = range[0]; i <= range[1]; i++) {
-					const line = document.lineAt(i);
-					if (line.isEmptyOrWhitespace) {
-						numberOfConsequtiveEmptyLines++;
-						if (numberOfConsequtiveEmptyLines > config.allowedNumberOfEmptyLines) {
-							edit.delete(line.rangeIncludingLineBreak);
-						}
-					} else {
-						numberOfConsequtiveEmptyLines = 0;
+}
+function removeEmptyLinesInRange(editor: TextEditor, document: TextDocument, ranges: IRange[]) {
+	editor.edit(edit => {
+		for (const range of ranges) {
+			let numberOfConsequtiveEmptyLines = 0;
+			for (let i = range[0]; i <= range[1]; i++) {
+				const line = document.lineAt(i);
+				if (line.isEmptyOrWhitespace) {
+					numberOfConsequtiveEmptyLines++;
+					if (numberOfConsequtiveEmptyLines > allowedNumberActive) {
+						edit.delete(line.rangeIncludingLineBreak);
 					}
+				} else {
+					numberOfConsequtiveEmptyLines = 0;
 				}
-			});
-		});
-	}
-	function findUpClosestNonEmptyLine(line: number, document: vscode.TextDocument) {
-		for (let i = line; i > 0; i--) {
-			const line = document.lineAt(i);
-			if (line.isEmptyOrWhitespace) { continue; }
-			return i;
+			}
 		}
-		return 0;
-	}
-	function findDownClosestNonEmptyLine(line: number, document: vscode.TextDocument) {
-		for (let i = line; i < document.lineCount; i++) {
-			const line = document.lineAt(i);
-			if (line.isEmptyOrWhitespace) { continue; }
-			return i;
+	});
+}
+function findUpClosestNonEmptyLine(ln: number, document: TextDocument) {
+	for (let i = ln; i > 0; i--) {
+		const lineAt = document.lineAt(i);
+		if (lineAt.isEmptyOrWhitespace) {
+			continue;
 		}
-		return document.lineCount - 1;
+		return i;
 	}
+	return 0;
+}
+function findDownClosestNonEmptyLine(ln: number, document: TextDocument) {
+	for (let i = ln; i < document.lineCount; i++) {
+		const lineAt = document.lineAt(i);
+		if (lineAt.isEmptyOrWhitespace) {
+			continue;
+		}
+		return i;
+	}
+	return document.lineCount - 1;
+}
 
-	const removeEmptyLinesInDocument = commands.registerTextEditorCommand(`${extName}.inDocument`, removeEmptyLines.bind(null, false));
-	const removeEmptyLinesInSelection = commands.registerTextEditorCommand(`${extName}.inSelection`, removeEmptyLines.bind(null, true));
-	ctx.subscriptions.push(removeEmptyLinesInDocument, removeEmptyLinesInSelection);
+export function activate() {
+	commands.registerTextEditorCommand(CommandIds.inDocument, (editor, edit, keybinding?: number) => {
+		removeEmptyLines(editor, false, keybinding);
+	});
+	commands.registerTextEditorCommand(CommandIds.inSelection, (editor, edit, keybinding?: number) => {
+		removeEmptyLines(editor, true, keybinding);
+	});
 }
 
 export function deactivate() { }

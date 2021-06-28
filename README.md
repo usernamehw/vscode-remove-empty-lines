@@ -1,10 +1,10 @@
 ### Provides 2 commands
 
-* `remove-empty-lines.inDocument`
-* `remove-empty-lines.inSelection` - can be used without selection (will remove all adjacent empty lines)
+* `remove-empty-lines.inDocument` - Removes empty lines in the entire document
+* `remove-empty-lines.inSelection` - Removes empty lines in selection. Can be used without selection (will remove all adjacent empty lines)
 
 
-![demo](https://raw.githubusercontent.com/usernamehw/vscode-remove-empty-lines/master/img/demo.gif)
+![demo](img/demo.gif)
 
 ### Settings
 
@@ -12,7 +12,7 @@
 
 Example: `"remove-empty-lines.allowedNumberOfEmptyLines": 1,`
 
-![demo_allowed_lines](https://raw.githubusercontent.com/usernamehw/vscode-remove-empty-lines/master/img/demo_allowed_lines.gif)
+![demo_allowed_lines](img/demo_allowed_lines.gif)
 
 # ⚠⚠⚠ Extension doesn't define any keyboard shortcuts
 
@@ -20,7 +20,7 @@ Example: `"remove-empty-lines.allowedNumberOfEmptyLines": 1,`
 
 ### DEMO: Pass allowed number of empty lines as arguments in `keybindings.json`
 
-```javascript
+```js
 {
 	"key": "ctrl+shift+9",
 	"command": "remove-empty-lines.inDocument",
