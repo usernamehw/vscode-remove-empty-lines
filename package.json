@@ -15,6 +15,9 @@
 	"bugs": {
 		"url": "https://github.com/usernamehw/vscode-remove-empty-lines/issues"
 	},
+	"extensionKind": [
+		"ui"
+	],
 	"keywords": [
 		"remove",
 		"delete",
