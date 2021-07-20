@@ -1,3 +1,7 @@
+## 0.0.8 `20 Jul 2021`
+
+- 🔨 Change `extensionKind`
+
 ## 0.0.7 `28 Jun 2021`
 
 - 🔨 Refactor?
