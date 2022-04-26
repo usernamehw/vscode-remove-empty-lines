@@ -32,7 +32,8 @@
 	],
 	"activationEvents": [
 		"onCommand:remove-empty-lines.inDocument",
-		"onCommand:remove-empty-lines.inSelection"
+		"onCommand:remove-empty-lines.inSelection",
+		"onStartupFinished"
 	],
 	"main": "./dist/extension",
 	"contributes": {
@@ -56,6 +57,11 @@
 					"default": 0,
 					"maximum": 500,
 					"description": "Number of allowed consecutive empty lines."
+				},
+				"remove-empty-lines.runOnSave": {
+					"type": "boolean",
+					"default": false,
+					"description": "Run remove empty lines on document save event."
 				}
 			}
 		}

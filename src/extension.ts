@@ -1,19 +1,21 @@
-import { commands, TextDocument, TextEditor, workspace } from 'vscode';
-import { IConfig, IRange } from './types';
+import { commands, Disposable, ExtensionContext, TextDocument, TextDocumentSaveReason, TextEditor, window, workspace } from 'vscode';
+import { ExtensionConfig, IRange } from './types';
 
 let allowedNumberActive = 0;
+let documentSaveDisposable: Disposable | undefined;
+let config: ExtensionConfig;
 
 const enum Constants {
-	EXTENSION_NAME = 'remove-empty-lines',
+	ExtensionConfigPrefix = 'remove-empty-lines',
 }
 
-const enum CommandIds {
+const enum CommandId {
 	inDocument = 'remove-empty-lines.inDocument',
 	inSelection = 'remove-empty-lines.inSelection',
 }
 
 function updateConfig() {
-	const config = workspace.getConfiguration().get<IConfig>(Constants.EXTENSION_NAME);
+	config = workspace.getConfiguration().get(Constants.ExtensionConfigPrefix) as ExtensionConfig;
 	if (!config) {
 		allowedNumberActive = 0;
 		return;
@@ -23,6 +25,8 @@ function updateConfig() {
 	} else {
 		allowedNumberActive = config.allowedNumberOfEmptyLines;
 	}
+
+	updateRunOnSaveListener();
 }
 function removeEmptyLines(editor: TextEditor, inSelection: boolean, keybindingsPassedAllowedNumberOfEmptyLines?: unknown) {
 	updateConfig();
@@ -98,13 +102,50 @@ function findDownClosestNonEmptyLine(ln: number, document: TextDocument) {
 	return document.lineCount - 1;
 }
 
-export function activate() {
-	commands.registerTextEditorCommand(CommandIds.inDocument, (editor, edit, keybinding?: number) => {
+function updateRunOnSaveListener() {
+	documentSaveDisposable?.dispose();
+
+	if (config.runOnSave) {
+		documentSaveDisposable = workspace.onWillSaveTextDocument(e => {
+			if (e.reason !== TextDocumentSaveReason.Manual) {
+				return;
+			}
+
+			const editor = findEditorByDocument(e.document);
+			if (!editor) {
+				return;
+			}
+
+			removeEmptyLines(editor, false);
+		});
+	}
+}
+
+function findEditorByDocument(document: TextDocument) {
+	for (const editor of window.visibleTextEditors) {
+		if (editor.document === document) {
+			return editor;
+		}
+	}
+	return undefined;
+}
+
+export function activate(context: ExtensionContext) {
+	updateConfig();
+
+	context.subscriptions.push(commands.registerTextEditorCommand(CommandId.inDocument, (editor, edit, keybinding?: number) => {
 		removeEmptyLines(editor, false, keybinding);
-	});
-	commands.registerTextEditorCommand(CommandIds.inSelection, (editor, edit, keybinding?: number) => {
+	}));
+	context.subscriptions.push(commands.registerTextEditorCommand(CommandId.inSelection, (editor, edit, keybinding?: number) => {
 		removeEmptyLines(editor, true, keybinding);
-	});
+	}));
+
+	context.subscriptions.push(workspace.onDidChangeConfiguration(e => {
+		if (!e.affectsConfiguration(Constants.ExtensionConfigPrefix)) {
+			return;
+		}
+		updateConfig();
+	}));
 }
 
 export function deactivate() { }
