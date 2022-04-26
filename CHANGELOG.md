@@ -1,3 +1,7 @@
+## 0.0.9 `26 Apr 2022`
+
+- feat: setting to run on save **"remove-empty-lines.runOnSave": true,**
+
 ## 0.0.8 `20 Jul 2021`
 
 - 🔨 Change `extensionKind`
