@@ -5,7 +5,7 @@
 		"es6": true
 	},
 	"parserOptions": {
-		"ecmaVersion": 2018,
+		"ecmaVersion": 2020,
 		"sourceType": "module",
 		"project": "./tsconfig.json"
 	},
@@ -27,7 +27,7 @@
 			"default": "array"
 		}],
 		"@typescript-eslint/await-thenable": 0,
-		"@typescript-eslint/no-confusing-void-expression": 0,
+		"@typescript-eslint/no-confusing-void-expression": 1,
 		"@typescript-eslint/ban-ts-ignore": 0,
 		"@typescript-eslint/explicit-module-boundary-types": 0,
 		"@typescript-eslint/ban-types": 1,
@@ -83,7 +83,7 @@
 		"@typescript-eslint/prefer-for-of": 1,
 		"@typescript-eslint/prefer-includes": 1,
 		"@typescript-eslint/prefer-readonly": 1,
-		"@typescript-eslint/prefer-regexp-exec": 1,
+		"@typescript-eslint/prefer-regexp-exec": 0,
 		"@typescript-eslint/prefer-string-starts-ends-with": 0,
 		"@typescript-eslint/promise-function-async": 1,
 		"@typescript-eslint/require-array-sort-compare": 1,

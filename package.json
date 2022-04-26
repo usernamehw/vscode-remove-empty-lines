@@ -65,16 +65,16 @@
 		"watch": "webpack --mode development --watch --stats minimal"
 	},
 	"devDependencies": {
-		"@types/node": "^14.17.5",
+		"@soda/friendly-errors-webpack-plugin": "^1.8.1",
+		"@types/node": "14.x",
 		"@types/vscode": "^1.56.0",
-		"@typescript-eslint/eslint-plugin": "^4.28.4",
-		"@typescript-eslint/parser": "^4.28.4",
-		"eslint": "^7.31.0",
-		"eslint-plugin-no-autofix": "^1.1.2",
-		"friendly-errors-webpack-plugin": "^1.7.0",
-		"ts-loader": "^9.2.3",
-		"typescript": "^4.3.5",
-		"webpack": "^5.45.1",
-		"webpack-cli": "^4.7.2"
+		"@typescript-eslint/eslint-plugin": "^5.21.0",
+		"@typescript-eslint/parser": "^5.21.0",
+		"eslint": "^8.14.0",
+		"eslint-plugin-no-autofix": "^1.2.3",
+		"ts-loader": "^9.2.8",
+		"typescript": "^4.6.3",
+		"webpack": "^5.72.0",
+		"webpack-cli": "^4.9.2"
 	}
 }
