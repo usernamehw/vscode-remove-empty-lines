@@ -6,9 +6,15 @@
 
 ![demo](img/demo.gif)
 
-### Settings
+<!-- SETTINGS_START -->
+## Settings (2)
 
-* `remove-empty-lines.allowedNumberOfEmptyLines`
+|Setting|Default|Description|
+|-|-|-|
+|remove-empty-lines.allowedNumberOfEmptyLines|**0**|Number of allowed consecutive empty lines.|
+|remove-empty-lines.runOnSave|**false**|Run remove empty lines on document save event.|
+<!-- SETTINGS_END -->
+
 
 Example: `"remove-empty-lines.allowedNumberOfEmptyLines": 1,`
 
