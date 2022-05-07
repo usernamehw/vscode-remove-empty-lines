@@ -1,3 +1,7 @@
+## 0.0.10 `07 May 2022`
+
+- 🔨 Add extension icon
+
 ## 0.0.9 `26 Apr 2022`
 
 - feat: setting to run on save **"remove-empty-lines.runOnSave": true,**
