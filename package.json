@@ -2,7 +2,7 @@
 	"name": "remove-empty-lines",
 	"displayName": "Remove empty lines",
 	"description": "Remove blank lines from document or selection.",
-	"version": "0.0.9",
+	"version": "0.0.10",
 	"publisher": "usernamehw",
 	"license": "MIT",
 	"icon": "img/icon.png",
