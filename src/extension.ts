@@ -9,7 +9,7 @@ const enum Constants {
 	ExtensionConfigPrefix = 'remove-empty-lines',
 }
 
-const enum CommandId {
+export const enum CommandId {
 	inDocument = 'remove-empty-lines.inDocument',
 	inSelection = 'remove-empty-lines.inSelection',
 }
