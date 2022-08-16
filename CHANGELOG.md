@@ -1,3 +1,7 @@
+## 0.0.12 `16 Aug 2022`
+
+- ✨ Option to remove empty lines only in specific languages #12
+
 ## 0.0.11 `07 May 2022`
 
 - 🐛 Wrong extension icon
