@@ -30,8 +30,6 @@ function getExtensionConfig(editor?: TextEditor): ExtensionConfig {
 		allowedNumberOfEmptyLines = config.allowedNumberOfEmptyLines;
 	}
 
-	console.log(allowedNumberOfEmptyLines);
-
 	return {
 		allowedNumberOfEmptyLines,
 		runOnSave: config.runOnSave,
