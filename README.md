@@ -20,6 +20,15 @@ Example: `"remove-empty-lines.allowedNumberOfEmptyLines": 1,`
 
 ![demo_allowed_lines](img/demo_allowed_lines.gif)
 
+## Per language setting:
+
+```js
+"remove-empty-lines.allowedNumberOfEmptyLines": 0,// allow 0 in all files
+"[markdown]": {
+  "remove-empty-lines.allowedNumberOfEmptyLines": 1,// allow 1 in markdown files
+},
+```
+
 # ⚠⚠⚠ Extension doesn't define any keyboard shortcuts
 
 [📚 How to open keybindings.json =======>](https://stackoverflow.com/a/45384050/5590193)

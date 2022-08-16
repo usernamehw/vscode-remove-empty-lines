@@ -57,6 +57,7 @@
 					"type": "integer",
 					"default": 0,
 					"maximum": 500,
+					"scope": "language-overridable",
 					"description": "Number of allowed consecutive empty lines."
 				},
 				"remove-empty-lines.runOnSave": {

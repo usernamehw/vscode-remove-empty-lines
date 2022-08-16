@@ -1,9 +1,7 @@
 import { commands, Disposable, ExtensionContext, TextDocument, TextDocumentSaveReason, TextEditor, window, workspace } from 'vscode';
 import { ExtensionConfig, IRange } from './types';
 
-let allowedNumberActive = 0;
 let documentSaveDisposable: Disposable | undefined;
-let config: ExtensionConfig;
 
 const enum Constants {
 	ExtensionConfigPrefix = 'remove-empty-lines',
@@ -14,24 +12,42 @@ export const enum CommandId {
 	inSelection = 'remove-empty-lines.inSelection',
 }
 
-function updateConfig() {
-	config = workspace.getConfiguration().get(Constants.ExtensionConfigPrefix) as ExtensionConfig;
+/**
+ * Get extension configuration (depending on scope (active editor document language)).
+ */
+function getExtensionConfig(editor?: TextEditor): ExtensionConfig {
+	let allowedNumberOfEmptyLines = 0;
+	const runOnSave = false;
+	const config = workspace.getConfiguration(undefined, editor?.document).get(Constants.ExtensionConfigPrefix) as ExtensionConfig;
+
 	if (!config) {
-		allowedNumberActive = 0;
-		return;
+		return {
+			runOnSave,
+			allowedNumberOfEmptyLines,
+		};
 	}
-	if (config.allowedNumberOfEmptyLines < 0 || config.allowedNumberOfEmptyLines >= 500) {
-		allowedNumberActive = 0;
-	} else {
-		allowedNumberActive = config.allowedNumberOfEmptyLines;
+	if (config.allowedNumberOfEmptyLines >= 0 && config.allowedNumberOfEmptyLines <= 500) {
+		allowedNumberOfEmptyLines = config.allowedNumberOfEmptyLines;
 	}
 
-	updateRunOnSaveListener();
+	console.log(allowedNumberOfEmptyLines);
+
+	return {
+		allowedNumberOfEmptyLines,
+		runOnSave: config.runOnSave,
+	};
 }
+
+function configWasUpdated() {
+	const $config = getExtensionConfig();
+	updateRunOnSaveListener($config.runOnSave);
+}
+
 function removeEmptyLines(editor: TextEditor, inSelection: boolean, keybindingsPassedAllowedNumberOfEmptyLines?: unknown) {
-	updateConfig();
+	const $config = getExtensionConfig(editor);
+
 	if (typeof keybindingsPassedAllowedNumberOfEmptyLines === 'number') {
-		allowedNumberActive = keybindingsPassedAllowedNumberOfEmptyLines;
+		$config.allowedNumberOfEmptyLines = keybindingsPassedAllowedNumberOfEmptyLines;
 	}
 
 	const { document } = editor;
@@ -41,29 +57,27 @@ function removeEmptyLines(editor: TextEditor, inSelection: boolean, keybindingsP
 
 		if (selections.length === 1 && selections[0].isEmpty) {
 			// remove all adjacent empty lines up & down of the cursor
-			const tempAllowedNumberOfEmptyLines = allowedNumberActive;
-			allowedNumberActive = 0;
 			const activeLine = document.lineAt(selections[0].start.line);
 			if (!activeLine.isEmptyOrWhitespace) {
 				return;
 			} else {
 				const closestUp = findUpClosestNonEmptyLine(selections[0].start.line, document);
 				const closestDown = findDownClosestNonEmptyLine(selections[0].start.line, document);
-				removeEmptyLinesInRange(editor, document, [[closestUp, closestDown]]);
+				removeEmptyLinesInRange(editor, document, [[closestUp, closestDown]], $config.allowedNumberOfEmptyLines);
 			}
-			allowedNumberActive = tempAllowedNumberOfEmptyLines;
 		} else {
 			const ranges: IRange[] = [];
 			for (const selection of selections) {
 				ranges.push([selection.start.line, selection.end.line]);
 			}
-			removeEmptyLinesInRange(editor, document, ranges);
+			removeEmptyLinesInRange(editor, document, ranges, $config.allowedNumberOfEmptyLines);
 		}
 	} else {
-		removeEmptyLinesInRange(editor, document, [[0, document.lineCount - 1]]);
+		removeEmptyLinesInRange(editor, document, [[0, document.lineCount - 1]], $config.allowedNumberOfEmptyLines);
 	}
 }
-function removeEmptyLinesInRange(editor: TextEditor, document: TextDocument, ranges: IRange[]) {
+
+function removeEmptyLinesInRange(editor: TextEditor, document: TextDocument, ranges: IRange[], allowedNumberOfEmptyLines: number) {
 	editor.edit(edit => {
 		for (const range of ranges) {
 			let numberOfConsequtiveEmptyLines = 0;
@@ -71,7 +85,7 @@ function removeEmptyLinesInRange(editor: TextEditor, document: TextDocument, ran
 				const line = document.lineAt(i);
 				if (line.isEmptyOrWhitespace) {
 					numberOfConsequtiveEmptyLines++;
-					if (numberOfConsequtiveEmptyLines > allowedNumberActive) {
+					if (numberOfConsequtiveEmptyLines > allowedNumberOfEmptyLines) {
 						edit.delete(line.rangeIncludingLineBreak);
 					}
 				} else {
@@ -102,10 +116,10 @@ function findDownClosestNonEmptyLine(ln: number, document: TextDocument) {
 	return document.lineCount - 1;
 }
 
-function updateRunOnSaveListener() {
+function updateRunOnSaveListener(runOnSave: boolean) {
 	documentSaveDisposable?.dispose();
 
-	if (config.runOnSave) {
+	if (runOnSave) {
 		documentSaveDisposable = workspace.onWillSaveTextDocument(e => {
 			if (e.reason !== TextDocumentSaveReason.Manual) {
 				return;
@@ -131,7 +145,7 @@ function findEditorByDocument(document: TextDocument) {
 }
 
 export function activate(context: ExtensionContext) {
-	updateConfig();
+	configWasUpdated();
 
 	context.subscriptions.push(commands.registerTextEditorCommand(CommandId.inDocument, (editor, edit, keybinding?: number) => {
 		removeEmptyLines(editor, false, keybinding);
@@ -144,7 +158,7 @@ export function activate(context: ExtensionContext) {
 		if (!e.affectsConfiguration(Constants.ExtensionConfigPrefix)) {
 			return;
 		}
-		updateConfig();
+		configWasUpdated();
 	}));
 }
 
