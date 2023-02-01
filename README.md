@@ -1,3 +1,7 @@
+[![Version](https://img.shields.io/visual-studio-marketplace/v/usernamehw.remove-empty-lines)](https://marketplace.visualstudio.com/items?itemName=usernamehw.remove-empty-lines)
+[![Installs](https://img.shields.io/visual-studio-marketplace/i/usernamehw.remove-empty-lines)](https://marketplace.visualstudio.com/items?itemName=usernamehw.remove-empty-lines)
+[![Rating](https://img.shields.io/visual-studio-marketplace/r/usernamehw.remove-empty-lines)](https://marketplace.visualstudio.com/items?itemName=usernamehw.remove-empty-lines)
+
 ### Provides 2 commands
 
 * `remove-empty-lines.inDocument` - Removes empty lines in the entire document
