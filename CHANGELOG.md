@@ -1,3 +1,8 @@
+## 1.0.0 `07 Feb 2023`
+
+- ✨ Make extension available on the web
+- ✨ Config option to run on save (delay of focus out) **"remove-empty-lines.onSaveReason"**
+
 ## 0.0.12 `16 Aug 2022`
 
 - ✨ Option to remove empty lines only in specific languages #12
