@@ -64,6 +64,33 @@
 					"type": "boolean",
 					"default": false,
 					"description": "Run remove empty lines on document save event."
+				},
+				"remove-empty-lines.onSaveReason": {
+					"type": "object",
+					"properties": {
+						"manual": {
+							"type": "boolean",
+							"default": true,
+							"description": "Manually triggered, e.g. by the user pressing save, by starting debugging, or by an API call."
+						},
+						"afterDelay": {
+							"type": "boolean",
+							"default": false,
+							"description": "Automatic after a delay."
+						},
+						"focusOut": {
+							"type": "boolean",
+							"default": false,
+							"description": "When the editor lost focus."
+						}
+					},
+					"default": {
+						"manual": true,
+						"afterDelay": false,
+						"focusOut": false
+					},
+					"additionalProperties": false,
+					"markdownDescription": "Controls which save event triggers running the extension (for `#remove-empty-lines.runOnSave#` setting)."
 				}
 			}
 		}

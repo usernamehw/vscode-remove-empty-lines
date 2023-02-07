@@ -1,4 +1,4 @@
-import { commands, Disposable, ExtensionContext, TextDocument, TextDocumentSaveReason, TextEditor, window, workspace } from 'vscode';
+import { commands, Disposable, ExtensionContext, Range, TextDocument, TextDocumentSaveReason, TextEditor, Uri, window, workspace, WorkspaceEdit } from 'vscode';
 import { ExtensionConfig, IRange } from './types';
 
 let documentSaveDisposable: Disposable | undefined;
@@ -12,6 +12,12 @@ export const enum CommandId {
 	inSelection = 'remove-empty-lines.inSelection',
 }
 
+const onSaveReasonDefaults: ExtensionConfig['onSaveReason'] = {
+	manual: true,
+	afterDelay: false,
+	focusOut: false,
+} as const;
+
 /**
  * Get extension configuration (depending on scope (active editor document language)).
  */
@@ -24,6 +30,7 @@ function getExtensionConfig(editor?: TextEditor): ExtensionConfig {
 		return {
 			runOnSave,
 			allowedNumberOfEmptyLines,
+			onSaveReason: onSaveReasonDefaults,
 		};
 	}
 	if (config.allowedNumberOfEmptyLines >= 0 && config.allowedNumberOfEmptyLines <= 500) {
@@ -33,12 +40,13 @@ function getExtensionConfig(editor?: TextEditor): ExtensionConfig {
 	return {
 		allowedNumberOfEmptyLines,
 		runOnSave: config.runOnSave,
+		onSaveReason: config.onSaveReason,
 	};
 }
 
 function configWasUpdated() {
 	const $config = getExtensionConfig();
-	updateRunOnSaveListener($config.runOnSave);
+	updateRunOnSaveListener($config);
 }
 
 function removeEmptyLines(editor: TextEditor, inSelection: boolean, keybindingsPassedAllowedNumberOfEmptyLines?: unknown) {
@@ -75,23 +83,43 @@ function removeEmptyLines(editor: TextEditor, inSelection: boolean, keybindingsP
 	}
 }
 
-function removeEmptyLinesInRange(editor: TextEditor, document: TextDocument, ranges: IRange[], allowedNumberOfEmptyLines: number) {
-	editor.edit(edit => {
-		for (const range of ranges) {
-			let numberOfConsequtiveEmptyLines = 0;
-			for (let i = range[0]; i <= range[1]; i++) {
-				const line = document.lineAt(i);
-				if (line.isEmptyOrWhitespace) {
-					numberOfConsequtiveEmptyLines++;
-					if (numberOfConsequtiveEmptyLines > allowedNumberOfEmptyLines) {
-						edit.delete(line.rangeIncludingLineBreak);
-					}
-				} else {
-					numberOfConsequtiveEmptyLines = 0;
+function removeEmptyLinesInRange(editorOrUri: TextEditor | Uri, document: TextDocument, ranges: IRange[], allowedNumberOfEmptyLines: number) {
+	const rangesToDelete: Range[] = [];
+
+	for (const range of ranges) {
+		let numberOfConsequtiveEmptyLines = 0;
+		for (let i = range[0]; i <= range[1]; i++) {
+			const line = document.lineAt(i);
+			if (line.isEmptyOrWhitespace) {
+				numberOfConsequtiveEmptyLines++;
+				if (numberOfConsequtiveEmptyLines > allowedNumberOfEmptyLines) {
+					rangesToDelete.push(line.rangeIncludingLineBreak);
 				}
+			} else {
+				numberOfConsequtiveEmptyLines = 0;
 			}
 		}
-	});
+	}
+	if (isEditor(editorOrUri)) {
+		editorOrUri.edit(edit => {
+			for (const range of rangesToDelete) {
+				edit.delete(range);
+			}
+		});
+	} else {
+		// When editor is not visible - it seems not possible to find it. But uri can be used with WorkspaceEdit.
+		const workspaceEdit = new WorkspaceEdit();
+		for (const range of rangesToDelete) {
+			workspaceEdit.delete(document.uri, range);
+		}
+		workspace.applyEdit(workspaceEdit);
+	}
+}
+/**
+ * Assume argument is of TextEditor type if it has the `document` property.
+ */
+function isEditor(arg: any): arg is TextEditor {
+	return Boolean(arg.document);
 }
 function findUpClosestNonEmptyLine(ln: number, document: TextDocument) {
 	for (let i = ln; i > 0; i--) {
@@ -114,12 +142,20 @@ function findDownClosestNonEmptyLine(ln: number, document: TextDocument) {
 	return document.lineCount - 1;
 }
 
-function updateRunOnSaveListener(runOnSave: boolean) {
+function updateRunOnSaveListener(config: ExtensionConfig) {
 	documentSaveDisposable?.dispose();
 
-	if (runOnSave) {
+	if (config.runOnSave) {
 		documentSaveDisposable = workspace.onWillSaveTextDocument(e => {
-			if (e.reason !== TextDocumentSaveReason.Manual) {
+			if (!isOnSaveReasonEnabled(e.reason, getExtensionConfig().onSaveReason)) {
+				return;
+			}
+
+			if (
+				config.onSaveReason.focusOut && e.reason === TextDocumentSaveReason.FocusOut ||
+				config.onSaveReason.afterDelay && e.reason === TextDocumentSaveReason.AfterDelay
+			) {
+				removeEmptyLinesInRange(e.document.uri, e.document, [[0, e.document.lineCount - 1]], config.allowedNumberOfEmptyLines);
 				return;
 			}
 
@@ -127,10 +163,20 @@ function updateRunOnSaveListener(runOnSave: boolean) {
 			if (!editor) {
 				return;
 			}
-
 			removeEmptyLines(editor, false);
 		});
 	}
+}
+
+function isOnSaveReasonEnabled(reason: TextDocumentSaveReason, configReason: ExtensionConfig['onSaveReason']): boolean {
+	if (
+		reason === TextDocumentSaveReason.Manual && configReason.manual ||
+		reason === TextDocumentSaveReason.AfterDelay && configReason.afterDelay ||
+		reason === TextDocumentSaveReason.FocusOut && configReason.focusOut
+	) {
+		return true;
+	}
+	return false;
 }
 
 function findEditorByDocument(document: TextDocument) {

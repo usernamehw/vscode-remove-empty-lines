@@ -11,12 +11,13 @@
 ![demo](img/demo.gif)
 
 <!-- SETTINGS_START -->
-## Settings (2)
+## Settings (3)
 
 |Setting|Default|Description|
 |-|-|-|
 |remove-empty-lines.allowedNumberOfEmptyLines|**0**|Number of allowed consecutive empty lines.|
 |remove-empty-lines.runOnSave|**false**|Run remove empty lines on document save event.|
+|remove-empty-lines.onSaveReason|\{"manual":true,"afterDelay":false,"focusOut":false\}|Controls which save event triggers running the extension (for `#remove-empty-lines.runOnSave#` setting).|
 <!-- SETTINGS_END -->
 
 
