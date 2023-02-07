@@ -36,7 +36,8 @@
 		"onCommand:remove-empty-lines.inSelection",
 		"onStartupFinished"
 	],
-	"main": "./dist/extension",
+	"main": "./dist/extension.js",
+	"browser": "./dist/extension.js",
 	"contributes": {
 		"commands": [
 			{
@@ -96,7 +97,7 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "webpack --mode production --color",
+		"vscode:prepublish": "webpack --mode production --color --devtool hidden-source-map",
 		"watch": "webpack --mode development --watch --stats minimal",
 		"compile-tests": "tsc -p . --outDir out",
 		"watch-tests": "tsc -p . -w --outDir out"
