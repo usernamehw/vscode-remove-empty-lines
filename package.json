@@ -64,6 +64,7 @@
 				"remove-empty-lines.runOnSave": {
 					"type": "boolean",
 					"default": false,
+					"scope": "language-overridable",
 					"description": "Run remove empty lines on document save event."
 				},
 				"remove-empty-lines.onSaveReason": {

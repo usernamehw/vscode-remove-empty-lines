@@ -21,11 +21,10 @@ const onSaveReasonDefaults: ExtensionConfig['onSaveReason'] = {
 /**
  * Get extension configuration (depending on scope (active editor document language)).
  */
-function getExtensionConfig(editor?: TextEditor): ExtensionConfig {
+function getExtensionConfig(document?: TextDocument): ExtensionConfig {
 	let allowedNumberOfEmptyLines = 0;
 	const runOnSave = false;
-	const config = workspace.getConfiguration(undefined, editor?.document).get(Constants.ExtensionConfigPrefix) as ExtensionConfig;
-
+	const config = workspace.getConfiguration(undefined, document).get(Constants.ExtensionConfigPrefix) as ExtensionConfig;
 	if (!config) {
 		return {
 			runOnSave,
@@ -45,13 +44,11 @@ function getExtensionConfig(editor?: TextEditor): ExtensionConfig {
 }
 
 function configWasUpdated() {
-	const $config = getExtensionConfig();
-	updateRunOnSaveListener($config);
+	updateRunOnSaveListener();
 }
 
 function removeEmptyLines(editor: TextEditor, inSelection: boolean, keybindingsPassedAllowedNumberOfEmptyLines?: unknown) {
-	const $config = getExtensionConfig(editor);
-
+	const $config = getExtensionConfig(editor.document);
 	if (typeof keybindingsPassedAllowedNumberOfEmptyLines === 'number') {
 		$config.allowedNumberOfEmptyLines = keybindingsPassedAllowedNumberOfEmptyLines;
 	}
@@ -141,31 +138,30 @@ function findDownClosestNonEmptyLine(ln: number, document: TextDocument) {
 	}
 	return document.lineCount - 1;
 }
-
-function updateRunOnSaveListener(config: ExtensionConfig) {
+function updateRunOnSaveListener() {
 	documentSaveDisposable?.dispose();
 
-	if (config.runOnSave) {
-		documentSaveDisposable = workspace.onWillSaveTextDocument(e => {
-			if (!isOnSaveReasonEnabled(e.reason, getExtensionConfig().onSaveReason)) {
-				return;
-			}
-
-			if (
-				config.onSaveReason.focusOut && e.reason === TextDocumentSaveReason.FocusOut ||
-				config.onSaveReason.afterDelay && e.reason === TextDocumentSaveReason.AfterDelay
-			) {
-				removeEmptyLinesInRange(e.document.uri, e.document, [[0, e.document.lineCount - 1]], config.allowedNumberOfEmptyLines);
-				return;
-			}
-
-			const editor = findEditorByDocument(e.document);
-			if (!editor) {
-				return;
-			}
-			removeEmptyLines(editor, false);
-		});
-	}
+	documentSaveDisposable = workspace.onWillSaveTextDocument(saveEvent => {
+		const config = getExtensionConfig(saveEvent.document);
+		if (!config.runOnSave) {
+			return;
+		}
+		if (!isOnSaveReasonEnabled(saveEvent.reason, getExtensionConfig().onSaveReason)) {
+			return;
+		}
+		if (
+			config.onSaveReason.focusOut && saveEvent.reason === TextDocumentSaveReason.FocusOut ||
+				config.onSaveReason.afterDelay && saveEvent.reason === TextDocumentSaveReason.AfterDelay
+		) {
+			removeEmptyLinesInRange(saveEvent.document.uri, saveEvent.document, [[0, saveEvent.document.lineCount - 1]], config.allowedNumberOfEmptyLines);
+			return;
+		}
+		const editor = findEditorByDocument(saveEvent.document);
+		if (!editor) {
+			return;
+		}
+		removeEmptyLines(editor, false);
+	});
 }
 
 function isOnSaveReasonEnabled(reason: TextDocumentSaveReason, configReason: ExtensionConfig['onSaveReason']): boolean {
