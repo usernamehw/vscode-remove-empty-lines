@@ -1,3 +1,7 @@
+## 1.0.1 `28 Feb 2023`
+
+- ✨ Make **"remove-empty-lines.runOnSave"** setting to be language-overridable
+
 ## 1.0.0 `07 Feb 2023`
 
 - ✨ Make extension available on the web
